@@ -38,7 +38,16 @@
   }
   #nav.shrink { width: calc(100% - 130px); }
   .nav-logo { font-family: var(--serif); font-size: 15px; font-weight: 400; font-style: italic; color: rgba(255,255,255,0.82); }
-  .nav-links { display: flex; gap: 38px; }
+  /* Desktop: overlay nav pill area as fixed transparent flex row */
+  .nav-links {
+    position: fixed; top: 22px; left: 50%; transform: translateX(-50%);
+    width: calc(100% - 80px); max-width: 1060px; height: 52px;
+    display: flex; align-items: center; justify-content: flex-end; gap: 38px;
+    z-index: 901; padding: 0 28px;
+    /* transparent on desktop — pill bg shows through */
+  }
+  /* Close button — hidden on desktop */
+  .nav-close { display: none; }
   .nav-links a { font-family: var(--sans); font-size: 10px; font-weight: 300; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(255,255,255,0.35); transition: color 0.25s; }
   .nav-links a:hover { color: var(--white); }
   .nav-links a.active { color: var(--gold); }
@@ -88,11 +97,11 @@
   .ph-bg {
     position: absolute; inset: 0;
     background: url('images/publication.jpg') center 20% / cover no-repeat;
-    filter: brightness(0.18) saturate(0.4);
+    filter: brightness(0.42) saturate(0.6);
     transform: scale(1.06); animation: phZoom 1.4s cubic-bezier(0.16,1,0.3,1) forwards;
   }
   @keyframes phZoom { to { transform: scale(1); } }
-  .ph-fade { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(7,7,11,0.3) 0%, rgba(7,7,11,0.88) 70%, var(--bg) 100%); }
+  .ph-fade { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(7,7,11,0.1) 0%, rgba(7,7,11,0.55) 65%, var(--bg) 100%); }
   .ph-inner { position: absolute; bottom: 0; left: 0; right: 0; max-width: 1060px; margin: 0 auto; padding: 0 56px 64px; display: flex; align-items: flex-end; justify-content: space-between; }
   .ph-title { font-family: var(--serif); font-size: clamp(52px,9vw,118px); font-weight: 300; font-style: italic; line-height: 0.86; color: #fff; overflow: hidden; }
   .ph-title span { display: inline-block; transform: translateY(108%); opacity: 0; animation: wordRise 0.9s cubic-bezier(0.16,1,0.3,1) 0.15s forwards; }
@@ -196,26 +205,61 @@
   .nav-burger.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
 
   @media (max-width: 768px) {
-    #nav { width: calc(100% - 32px); padding: 0 18px; height: 48px; top: 14px; border-radius: 20px; }
-    #nav.shrink { width: calc(100% - 48px); }
+    /* KEY FIX: remove transform so position:fixed children cover full viewport on iOS */
+    #nav { left: 16px; right: 16px; width: auto; transform: none; padding: 0 18px; height: 48px; top: 14px; border-radius: 20px; }
+    #nav.shrink { left: 24px; right: 24px; width: auto; }
     .nav-burger { display: flex; z-index: 1300; }
+    /* Full-page solid overlay */
     .nav-links { position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      flex-direction: column; align-items: center; justify-content: center; gap: 4px;
-      background: rgba(7,7,11,0.98); backdrop-filter: blur(28px);
-      -webkit-backdrop-filter: blur(28px);
+      transform: none; width: 100%; max-width: none; height: 100%;
+      flex-direction: column; align-items: stretch; justify-content: flex-start;
+      overflow-y: auto; -webkit-overflow-scrolling: touch;
+      background: #07070b; padding: 0;
       opacity: 0; pointer-events: none; transition: opacity 0.3s ease; z-index: 1200; }
     .nav-links.open { opacity: 1; pointer-events: all; }
-    .nav-links > a { font-size: 18px !important; letter-spacing: 0.18em; padding: 14px 0; width: 100%; text-align: center; }
-    .nav-item { flex-direction: column; align-items: center; }
-    .nav-item > a { font-size: 18px !important; padding: 14px 0; width: 100%; text-align: center; }
-    .nav-item > a::after { display: none; }
+    /* Close (×) button — top-right inside the overlay */
+    .nav-close {
+      display: block; position: absolute; top: 20px; right: 24px;
+      background: none; border: none; cursor: pointer;
+      font-size: 26px; line-height: 1; font-weight: 200;
+      color: rgba(255,255,255,0.55); z-index: 10; padding: 4px 8px;
+    }
+    .nav-close:hover { color: var(--white); }
+    /* Spacer that clears the nav pill */
+    .nav-links::before { content: ''; display: block; height: 76px; flex-shrink: 0;
+      border-bottom: 1px solid rgba(255,255,255,0.07); }
+    /* Top-level links */
+    .nav-links > a {
+      font-size: 17px !important; letter-spacing: 0.18em;
+      padding: 22px 0; width: 100%; text-align: center;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      color: rgba(255,255,255,0.65) !important;
+    }
+    .nav-links > a.active { color: var(--white) !important; }
+    /* Artworks nav-item */
+    .nav-item { flex-direction: column; align-items: stretch; width: 100%;
+      border-bottom: 1px solid rgba(255,255,255,0.07); }
+    .nav-item > a {
+      font-size: 17px !important; padding: 22px 0; width: 100%; text-align: center;
+      display: flex !important; align-items: center; justify-content: center; gap: 8px;
+      color: rgba(255,255,255,0.65) !important;
+    }
+    .nav-item > a::after { content: '+'; display: inline-block !important;
+      font-size: 19px; line-height: 1; opacity: 0.4; transition: transform 0.3s; }
+    .nav-item.mm-open > a::after { transform: rotate(45deg); }
     .nav-item::before { display: none; }
-    .nav-dropdown { position: static; opacity: 1 !important; pointer-events: all !important;
-      transform: none !important; background: transparent; border: none; border-radius: 0;
-      padding: 2px 0 10px; min-width: auto; box-shadow: none; }
-    .nav-dropdown a { padding: 7px 0; font-size: 13px !important; color: rgba(255,255,255,0.40);
-      text-align: center; background: transparent !important; }
-    .nav-dropdown a.active { color: var(--gold); }
+    /* Sub-items: hidden by default, revealed by JS */
+    .nav-dropdown { position: static !important;
+      max-height: 0; overflow: hidden;
+      opacity: 1 !important; pointer-events: all !important;
+      transform: none !important; background: rgba(255,255,255,0.03);
+      border: none; border-radius: 0; padding: 0; min-width: auto; box-shadow: none;
+      transition: max-height 0.35s ease !important; }
+    .nav-item.mm-open .nav-dropdown { max-height: 200px; padding: 8px 0 14px; }
+    .nav-dropdown a { padding: 12px 0; font-size: 13px !important; letter-spacing: 0.16em;
+      color: rgba(255,255,255,0.40) !important; text-align: center;
+      background: transparent !important; }
+    .nav-dropdown a.active { color: var(--gold) !important; }
   }
 
   @media (max-width: 1024px) {
@@ -235,11 +279,16 @@
     .contact-grid-x { grid-template-columns: 1fr; gap: 44px; }
     footer { padding: 28px 24px; flex-direction: column; gap: 20px; text-align: center; }
     .f-links { flex-wrap: wrap; justify-content: center; gap: 14px; }
+    /* Stack title + meta vertically so they don't collide */
+    .ph-inner { flex-direction: column; align-items: flex-start; gap: 14px; padding: 0 24px 40px; }
+    .ph-title { font-size: clamp(40px,11vw,72px) !important; }
+    .ph-meta { text-align: left; }
   }
   @media (max-width: 480px) {
     .article-headline { font-size: clamp(22px,8vw,36px); }
     .article-trio { grid-template-columns: 1fr; gap: 3px; }
     .article-byline { font-size: 11px; }
+    .ph-title { font-size: clamp(36px,12vw,60px) !important; }
   }
   </style>
 </head>
@@ -248,7 +297,10 @@
 
   <nav id="nav">
     <a href="index.html" class="nav-logo">Hsing Ya Wu</a>
-    <div class="nav-links" id="nav-links">
+    <button class="nav-burger" id="nav-burger" aria-label="Open menu"><span></span><span></span><span></span></button>
+  </nav>
+<div class="nav-links" id="nav-links">
+  <button class="nav-close" id="nav-close" aria-label="Close menu">&#215;</button>
       <a href="index.html#about">About</a>
       <div class="nav-item">
         <a href="artworks.html">Artworks</a>
@@ -261,8 +313,7 @@
       <a href="publication.html" class="active">Publication</a>
       <a href="index.html#contact">Contact</a>
     </div>
-    <button class="nav-burger" id="nav-burger" aria-label="Open menu"><span></span><span></span><span></span></button>
-  </nav>
+
 
   <div class="page-header">
     <div class="ph-bg"></div><div class="ph-fade"></div>
@@ -370,17 +421,28 @@
 
     const burger = document.getElementById('nav-burger');
     const navLinksEl = document.getElementById('nav-links');
+    const navClose  = document.getElementById('nav-close');
+    function closeMobileMenu() {
+      burger.classList.remove('open');
+      navLinksEl.classList.remove('open');
+      document.body.style.overflow = '';
+    }
     if (burger && navLinksEl) {
       burger.addEventListener('click', () => {
         burger.classList.toggle('open');
         navLinksEl.classList.toggle('open');
         document.body.style.overflow = navLinksEl.classList.contains('open') ? 'hidden' : '';
       });
+      if (navClose) navClose.addEventListener('click', closeMobileMenu);
       navLinksEl.querySelectorAll('a').forEach(a => {
-        a.addEventListener('click', () => {
-          burger.classList.remove('open');
-          navLinksEl.classList.remove('open');
-          document.body.style.overflow = '';
+        a.addEventListener('click', (e) => {
+          const isArtworksToggle = a.parentElement.classList.contains('nav-item') && window.innerWidth <= 768;
+          if (isArtworksToggle) {
+            e.preventDefault();
+            a.closest('.nav-item').classList.toggle('mm-open');
+          } else {
+            closeMobileMenu();
+          }
         });
       });
     }
